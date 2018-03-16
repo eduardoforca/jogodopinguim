@@ -1,0 +1,7 @@
+bin/
+dep/
+*.exe
+Eduardo_130108405*
+*.cproject
+*.project
+*.settings
