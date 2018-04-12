@@ -3,6 +3,7 @@
 #include "SDL_include.h"
 #include <stdexcept>
 #include "Game.h"
+#include "Resources.h"
 
 using std::string;
 
@@ -21,6 +22,9 @@ Game::Game (string title, int width, int height) {
 	else {
 		instance = this;
 	}
+
+	srand(time(NULL));
+
 	// Initializes SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) != 0) {
 		throw std::runtime_error(SDL_GetError());
@@ -73,8 +77,12 @@ Game::~Game () {
 	SDL_Quit();
 }
 
-SDL_Renderer* Game::GetRenderer () const{
+SDL_Renderer* Game::GetRenderer () const {
 	return renderer;
+}
+
+State& Game::GetState () const {
+	return *state;
 }
 
 void Game::Run () {
@@ -86,4 +94,8 @@ void Game::Run () {
 		SDL_RenderPresent(renderer);
 		SDL_Delay(33);
 	}
+
+	Resources::ClearImages();
+	Resources::ClearMusics();
+	Resources::ClearSounds();
 }
