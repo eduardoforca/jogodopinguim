@@ -1,7 +1,10 @@
 #include "TileMap.h"
+#include "Camera.h"
 #include <fstream>
 #include <stdexcept>
 #include <string>
+
+#define PARALLAX_FACTOR 0.7
 
 using std::ifstream;
 using std::string;
@@ -53,8 +56,11 @@ void TileMap::RenderLayer (int layer, int cameraX, int cameraY) {
 		for (int x = 0; x < mapWidth; ++x) {
 			int index = At(x, y, layer);
 			if (index >= 0) {
-				tileSet->RenderTile(index, tileSet->GetTileWidth() * x,
-						tileSet->GetTileHeight() * y);
+				tileSet->RenderTile(index,
+						(tileSet->GetTileWidth() * x) - cameraX
+								- cameraX * layer * PARALLAX_FACTOR,
+						(tileSet->GetTileHeight() * y) - cameraY
+								- cameraY * layer * PARALLAX_FACTOR);
 			}
 		}
 	}
@@ -62,7 +68,7 @@ void TileMap::RenderLayer (int layer, int cameraX, int cameraY) {
 
 void TileMap::Render () {
 	for (int z = 0; z < mapDepth; ++z) {
-		RenderLayer(z);
+		RenderLayer(z, Camera::pos.x, Camera::pos.y);
 	}
 }
 

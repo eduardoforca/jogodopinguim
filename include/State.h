@@ -32,10 +32,6 @@ class State {
 		 * Renders state on window
 		 */
 		void Render ();
-		/**
-		 * Deals with user input
-		 */
-		void Input ();
 
 		/**
 		 * Adds a Penguin Object in position
@@ -45,6 +41,7 @@ class State {
 		void AddObject (int mouseX, int mouseY);
 	private:
 		Music music;
+		GameObject map;
 		bool quitRequested;
 		vector<unique_ptr<GameObject>> objectArray;
 };

@@ -37,6 +37,12 @@ class Game {
 		 */
 		static Game& GetInstance ();
 
+		/**
+		 * Returns frame time interval in seconds
+		 * @return delta time
+		 */
+		float GetDeltaTime () const;
+
 	private:
 		/**
 		 * Game private constructor
@@ -50,4 +56,10 @@ class Game {
 		SDL_Window* window;
 		SDL_Renderer* renderer;
 		State* state;
+		int frameStart;
+		float dt;
+		/**
+		 * Calculates frame time interval
+		 */
+		void CalculateDeltaTime ();
 };
