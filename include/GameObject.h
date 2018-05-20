@@ -18,6 +18,11 @@ class GameObject {
 		~GameObject();
 
 		/**
+		 * Starts all components of the GameObject
+		 */
+		void Start ();
+
+		/**
 		 * Update all GameObject components
 		 * @param dt
 		 */
@@ -59,12 +64,17 @@ class GameObject {
 		 */
 		Component* GetComponent (string type) const;
 
+		void NotifyCollision (GameObject& other);
+
 		/**
 		 * GameObject position and dimension on window
 		 */
 		Rect box;
 
+		double angleDeg = 0;
+
 	private:
 		vector<unique_ptr<Component>> components;
 		bool isDead;
+		bool started;
 };

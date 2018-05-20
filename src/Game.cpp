@@ -1,5 +1,6 @@
 #define INCLUDE_SDL_MIXER
 #define INCLUDE_SDL_IMAGE
+#define INCLUDE_SDL_TTF
 #include "SDL_include.h"
 #include <stdexcept>
 #include "Game.h"
@@ -16,7 +17,8 @@ Game& Game::GetInstance () {
 	}
 	return *instance;
 }
-Game::Game (string title, int width, int height) {
+Game::Game (string title, int width, int height) :
+		width(width), height(height) {
 	if (instance != nullptr) {
 		throw std::runtime_error("Game already instantiated");
 	}
@@ -34,6 +36,10 @@ Game::Game (string title, int width, int height) {
 	dt = 0;
 
 	frameStart = 0;
+
+	if (TTF_Init() != 0) {
+		throw std::runtime_error(SDL_GetError());
+	}
 
 	// Initializes SDL_image
 	if (IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF)
@@ -65,11 +71,21 @@ Game::Game (string title, int width, int height) {
 	}
 
 //	Initializes state
-	state = new State();
+	storedState = nullptr;
 }
 
 Game::~Game () {
-	delete(state);
+	if (storedState) {
+		delete (storedState);
+	}
+	while (!stateStack.empty()) {
+		stateStack.pop();
+	}
+
+	Resources::ClearImages();
+	Resources::ClearMusics();
+	Resources::ClearSounds();
+	Resources::ClearFonts();
 
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
@@ -79,6 +95,8 @@ Game::~Game () {
 
 	IMG_Quit();
 
+	TTF_Quit();
+
 	SDL_Quit();
 }
 
@@ -86,8 +104,8 @@ SDL_Renderer* Game::GetRenderer () const {
 	return renderer;
 }
 
-State& Game::GetState () const {
-	return *state;
+State& Game::GetCurrentState () const {
+	return *stateStack.top();
 }
 
 void Game::CalculateDeltaTime () {
@@ -102,17 +120,47 @@ float Game::GetDeltaTime () const {
 }
 
 void Game::Run () {
-	// Waits for quit signal
-	while (!state->QuitRequested()) {
-		CalculateDeltaTime();
-		InputManager::GetInstance().Update();
-		state->Update(dt);
-		state->Render();
-		SDL_RenderPresent(renderer);
-		SDL_Delay(33);
+	if (storedState) {
+		stateStack.emplace(storedState);
+		stateStack.top()->Start();
+		storedState = nullptr;
+		while (!stateStack.top()->QuitRequested() && !stateStack.empty()) {
+			if (stateStack.top()->PopRequested()) {
+				stateStack.pop();
+				Resources::ClearImages();
+				Resources::ClearMusics();
+				Resources::ClearSounds();
+				Resources::ClearFonts();
+				if (!stateStack.empty()) {
+					stateStack.top()->Resume();
+				}
+			}
+			if (storedState) {
+				if (!stateStack.empty()) {
+					stateStack.top()->Pause();
+				}
+				stateStack.emplace(storedState);
+				stateStack.top()->Start();
+				storedState = nullptr;
+			}
+			CalculateDeltaTime();
+			InputManager::GetInstance().Update();
+			stateStack.top()->Update(dt);
+			stateStack.top()->Render();
+			SDL_RenderPresent(renderer);
+			SDL_Delay(33);
+		}
 	}
+}
 
-	Resources::ClearImages();
-	Resources::ClearMusics();
-	Resources::ClearSounds();
+int Game::GetHeight () const {
+	return height;
+}
+
+int Game::GetWidth () const {
+	return width;
+}
+
+void Game::Push (State* state) {
+	storedState = state;
 }

@@ -1,47 +1,66 @@
 #pragma once
-#include "GameObject.h"
-#include "Music.h"
-#include <vector>
 #include <memory>
+#include <vector>
+#include "GameObject.h"
 
+using std::weak_ptr;
 using std::vector;
-using std::unique_ptr;
+using std::shared_ptr;
 
-/**
- * Class of game current state
- */
 class State {
 	public:
 		State ();
-		~State ();
+		virtual ~State ();
+
+		/**
+		 * Loads game assets
+		 */
+		virtual void LoadAssets () = 0;
+		/**
+		 * Updates game state
+		 * @param dt time interval since last update
+		 */
+		virtual void Update (float dt) = 0;
+		/**
+		 * Renders state on window
+		 */
+		virtual void Render () = 0;
+
+		virtual void Start () = 0;
+		virtual void Pause () = 0;
+		virtual void Resume () = 0;
+
+		virtual weak_ptr<GameObject> AddObject (GameObject*);
+		virtual weak_ptr<GameObject> GetObjectPtr (GameObject*);
+
+		bool PopRequested () const;
 		/**
 		 * Returns whether there was a close command to the game
 		 * @return if the close command was issued by the game
 		 */
 		bool QuitRequested () const;
-		/**
-		 * Loads game assets
-		 */
-		void LoadAssets ();
-		/**
-		 * Updates game state
-		 * @param dt
-		 */
-		void Update (float dt);
-		/**
-		 * Renders state on window
-		 */
-		void Render ();
+
+	protected:
 
 		/**
-		 * Adds a Penguin Object in position
-		 * @param mouseX x-coordinate of penguin
-		 * @param mouseY y-coordinate of penguin
+		 * Starts all objects of the StageState
 		 */
-		void AddObject (int mouseX, int mouseY);
+		void StartArray ();
+		/**
+		 * Updates all objects of the StageState
+		 * @param dt time interval since last update
+		 */
+		virtual void UpdateArray (float dt);
+		/**
+		 * Renders all objects of the StageState
+		 */
+		virtual void RenderArray ();
+
+		bool popRequested = false;
+		bool quitRequested = false;
+		bool started = false;
+
+		vector<shared_ptr<GameObject>> objectArray;
+
 	private:
-		Music music;
-		GameObject map;
-		bool quitRequested;
-		vector<unique_ptr<GameObject>> objectArray;
 };

@@ -29,6 +29,12 @@ class Component {
 		 * @return whether the type matches or not
 		 */
 		bool virtual Is (string type) const = 0;
+		/**
+		 * Sets the component up
+		 */
+		void virtual Start ();
+
+		void virtual NotifyCollision (GameObject& other);
 
 	protected:
 		GameObject& associated;

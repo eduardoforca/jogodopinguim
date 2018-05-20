@@ -2,9 +2,13 @@
 #define INCLUDE_SDL
 #include "SDL_include.h"
 #include <string>
+#include "Vec2.h"
+#include "Timer.h"
 #include "Component.h"
+#include <memory>
 
 using std::string;
+using std::shared_ptr;
 
 /**
  * Class for game image
@@ -18,7 +22,8 @@ class Sprite : public Component{
 		 * @param associated GameObjected that encapsulates the sprite
 		 * @param file image file
 		 */
-		Sprite (GameObject& associated, string file);
+		Sprite (GameObject& associated, string file, int frameCount = 1,
+				float frameTime = 1, float secondsToSelfDestruct = 0);
 		~Sprite ();
 
 		/**
@@ -72,9 +77,33 @@ class Sprite : public Component{
 		 */
 		void Update (float dt);
 
+		/**
+		 * Sets the scale of the Sprite
+		 * @param scaleX horizontal scale
+		 * @param scaleY vertical scale
+		 */
+		void SetScale (float scaleX, float scaleY);
+
+		/**
+		 * Gets the current scale of the Sprite
+		 * @return Sprite scale
+		 */
+		Vec2 GetScale () const;
+
+		void SetFrame (int frame);
+		void SetFrameCount (int frameCount);
+		void SetFrameTime (float frameTime);
+
 	private:
-		SDL_Texture* texture;
+		shared_ptr<SDL_Texture> texture;
 		int width = 0;
 		int height = 0;
 		SDL_Rect clipRect;
+		Vec2 scale;
+		int frameCount = 1;
+		int currentFrame = 0;
+		float timeElapsed = 0;
+		float frameTime = 1;
+		Timer selfDestructCount;
+		float secondsToSelfDestruct = 0;
 };
